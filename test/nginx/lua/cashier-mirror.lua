@@ -20,37 +20,31 @@ local json = require("json.json")
 
 --创建实例
 local red = redis:new()
-red:set_timeout(1000)
-
-local function close_redis(red)
-    if not red then
-        return
-    end
-    --释放连接
-    local pool_max_idle_time = 10000 --毫秒
-    local pool_size = 100 --连接池大小
-    local ok, err = red:set_keepalive(pool_max_idle_time, pool_size)
-    if not ok then
-        ngx.log("set keepalive error: ", err)
-    end
-end
+red:set_timeout(500000)  --毫秒
 
 --建立连接
 local ok, err = red:connect(redis_ip, redis_port)
 if not ok then
     ngx.exec("@CashierProxy")
-    return close_redis(red)
 end
 
 --获取数据
 local resp, err = red:get(CashierProxy_Mirror_key)
 if resp == ngx.null then
     ngx.exec("@CashierProxy")
-    return close_redis(red)
 else
     respStr = json.decode(resp)
     respStatus = respStr.status
     --ngx.say(respStatus)
+end
+
+--连接池
+local max_idle_timeout = 1000000 --最大空闲超时时间
+local pool_size = 100  --连接池大小
+local ok, err = red:set_keepalive(max_idle_timeout, pool_size)
+if not ok then
+    ngx.log(ngx.ERR, "set keepalive error: ", err)
+    return
 end
 
 --判断是否进入mirror
