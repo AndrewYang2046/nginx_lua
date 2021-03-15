@@ -4,6 +4,7 @@
 -- User: yang.hong
 -- Date: 2017-11-01
 -- Time: 17:24
+-- smp-pay: cashier.sandpay.com.cn
 
 --代理地址及key值定义
 local CashierProxy_a = "172.17.2.27:8009"
